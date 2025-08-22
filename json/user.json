@@ -1,11 +1,21 @@
 [
     {
         "username": "Ramon",
-        "password": "Rocha",
+        "password": "Martins",
         "id": "userID#01",
         "status": "active",
         "name": "Ramon Rocha",
         "created_at": "2025-08-22 04:18:20",
+        "email": "teste@email.com",
+        "number": ""
+    },
+    {
+        "username": "Teste",
+        "password": "123456",
+        "id": "userID#02",
+        "status": "active",
+        "name": "Ramon",
+        "created_at": "2025-08-22 22:32:55",
         "email": "teste@email.com",
         "number": ""
     }

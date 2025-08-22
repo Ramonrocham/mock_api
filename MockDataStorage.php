@@ -22,6 +22,15 @@ class MockDataStorage{
                 "code" => 400
             );
         }
+
+        if (self::isUsername($s_username)) {
+            return array(
+                "status" => "error",
+                "message" => "Username already exists",
+                "code" => 409
+            );
+        }
+        
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true) ?? [];
         $users[count($users)] = array(
@@ -126,7 +135,22 @@ class MockDataStorage{
     public static function setNewPassword($username, $password, $newPassword){
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true);
+
+                        
+        $changesJson = file_get_contents("json/logChanges.json");
+        $changes = json_decode($changesJson, true) ?? [];
+
         if (!$users) {
+            $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "falied"
+                );
+            file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
             return array(
                 "status" => "error",
                 "message" => "No user found",
@@ -137,6 +161,14 @@ class MockDataStorage{
             if ($user['username'] === $username && $user['password'] === $password) {
                 $user['password'] = $newPassword;
                 file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
+
+                $changes[] = array(
+                    'userData' => $user,
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "success"
+                );
+                file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
                 return array(
                     "status" => "success",
                     "message" => "Password updated successfully",
@@ -144,6 +176,17 @@ class MockDataStorage{
                 );
             }
         }
+
+        $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "falied"
+                );
+        file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
         return array(
             "status" => "error",
             "message" => "Invalid username or password",
@@ -155,6 +198,16 @@ class MockDataStorage{
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true);
         if (!$users) {
+            $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "falied"
+                );
+            file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
             return array(
                 "status" => "error",
                 "message" => "No user found",
@@ -165,6 +218,15 @@ class MockDataStorage{
             if ($user['username'] === $username && $user['email'] === $email) {
                 $user['password'] = $newPassword;
                 file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
+
+                $changes[] = array(
+                    'userData' => $user,
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "success"
+                );
+                file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
                 return array(
                     "status" => "success",
                     "message" => "Password updated successfully",
@@ -172,10 +234,26 @@ class MockDataStorage{
                 );
             }
         }
+
+        $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "password_change",
+                    'status' => "falied"
+                );
+        file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
         return array(
             "status" => "error",
             "message" => "Invalid username or email",
             "code" => 401
         );
+    }
+
+    public static function isUsername($username){
+        $response = self::getUsersByUsername($username);
+        return $response['status'] === "success";
     }
 }
