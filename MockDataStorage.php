@@ -21,6 +21,7 @@ class MockDataStorage{
             "code" => 201
         );
     }
+
     public static function getUsersByUsername($username){
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true);
@@ -46,6 +47,59 @@ class MockDataStorage{
             "status" => "error",
             "message" => "User not found",
             "code" => 404
+        );
+    }
+
+    public static function userLogin($username, $password){
+        $usersJson = file_get_contents("json/user.json");
+        $users = json_decode($usersJson, true);
+        $logLoginJson = file_get_contents("json/logLogin.json");
+        $logLogin = json_decode($logLoginJson, true) ?? [];
+        if (!$users) {
+            $logLogin[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'status' => "falied"
+                );
+            file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
+            return array(
+                "status" => "error",
+                "message" => "No user found",
+                "code" => 404
+            );
+        }
+        foreach ($users as $user) {
+            if ($user['username'] === $username && $user['password'] === $password) {
+                
+                $logLogin[] = array(
+                    'userData' => array('userId' => $user['id'],
+                        'username' => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'status' => "success"
+                );
+                file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
+                return array(
+                    "status" => "success",
+                    "message" => "Login successful",
+                    "code" => 200,
+                    "data" => $user
+                );
+            }
+        }
+        $logLogin[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'status' => "falied"
+                );
+        file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
+        return array(
+            "status" => "error",
+            "message" => "Invalid username or password",
+            "code" => 401
         );
     }
 }
