@@ -150,4 +150,32 @@ class MockDataStorage{
             "code" => 401
         );
     }
+
+    public static function setNewpasswordByEmail($username, $email, $newPassword){
+        $usersJson = file_get_contents("json/user.json");
+        $users = json_decode($usersJson, true);
+        if (!$users) {
+            return array(
+                "status" => "error",
+                "message" => "No user found",
+                "code" => 404
+            );
+        }
+        foreach ($users as &$user) {
+            if ($user['username'] === $username && $user['email'] === $email) {
+                $user['password'] = $newPassword;
+                file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
+                return array(
+                    "status" => "success",
+                    "message" => "Password updated successfully",
+                    "code" => 200
+                );
+            }
+        }
+        return array(
+            "status" => "error",
+            "message" => "Invalid username or email",
+            "code" => 401
+        );
+    }
 }
