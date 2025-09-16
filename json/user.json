@@ -18,5 +18,15 @@
         "created_at": "2025-08-22 22:32:55",
         "email": "teste@email.com",
         "number": ""
+    },
+    {
+        "username": "Admin",
+        "password": "Admin",
+        "id": "userID#03",
+        "status": "active",
+        "name": "Administrador",
+        "created_at": "2025-09-16 06:01:39",
+        "email": "adm@email.adm",
+        "number": ""
     }
 ]

@@ -30,7 +30,7 @@ class MockDataStorage{
                 "code" => 409
             );
         }
-        
+
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true) ?? [];
         $users[count($users)] = array(
@@ -255,5 +255,75 @@ class MockDataStorage{
     public static function isUsername($username){
         $response = self::getUsersByUsername($username);
         return $response['status'] === "success";
+    }
+
+    public static function setNewUsername($username, $newUsername){
+        $usersJson = file_get_contents("json/user.json");
+        $users = json_decode($usersJson, true);
+
+        $changesJson = file_get_contents("json/logChanges.json");
+        $changes = json_decode($changesJson, true) ?? [];
+
+        if (!$users) {
+            $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "username_change",
+                    'status' => "falied"
+                );
+            file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
+            return array(
+                "status" => "error",
+                "message" => "No user found",
+                "code" => 404
+            );
+        }
+
+        if (self::isUsername($newUsername)) {
+            return array(
+                "status" => "error",
+                "message" => "Username already exists",
+                "code" => 409
+            );
+        }
+
+        foreach ($users as &$user) {
+            if ($user['username'] === $username) {
+                $oldUsername = $user['username'];
+                $user['username'] = $newUsername;
+                file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
+
+                $changes[] = array(
+                    'userData' => $user,
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "username_change",
+                    'status' => "success"
+                );
+                file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+                return array(
+                    "status" => "success",
+                    "message" => "Username updated successfully from '$oldUsername' to '$newUsername'",
+                    "code" => 200
+                );
+            }
+        }
+
+        $changes[] = array(
+                    'userData' => array(
+                        "userId" => "null",
+                        "username" => $username),
+                    'timestamp' => date("Y-m-d H:i:s"),
+                    'action' => "username_change",
+                    'status' => "falied"
+                );
+        file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
+
+        return array(
+            "status" => "error",
+            "message" => "Invalid username",
+        );
     }
 }
