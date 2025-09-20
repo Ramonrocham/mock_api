@@ -1,5 +1,7 @@
 <?php
 
+require_once 'conexao.php';
+
 class MockDataStorage{
     public static function newUser($username, $password, $fullName, $email, $number = null){
         if(!$username || !$password || !$fullName || !$email){
@@ -22,7 +24,27 @@ class MockDataStorage{
                 "code" => 400
             );
         }
+        try{
+            $conn = getDbConnection();
+            $numUser = $conn->query("SELECT COUNT(*) as count FROM users");
+            $row = $numUser->fetch_assoc();
+            $count = $row['count'];
+            $id = "userID#$count";
+            $stmt = $conn->prepare("INSERT INTO users (id, username, password, name, email, number, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'active', NOW())");
+            $stmt->bind_param("ssssss", $id, $s_username, $s_password, $s_fullName, $s_email, $s_number);
+            $stmt->execute();
+            $stmt->close();
 
+            $conn->close();
+
+        }catch(Exception $e){
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+
+        }
         if (self::isUsername($s_username)) {
             return array(
                 "status" => "error",
@@ -31,19 +53,7 @@ class MockDataStorage{
             );
         }
 
-        $usersJson = file_get_contents("json/user.json");
-        $users = json_decode($usersJson, true) ?? [];
-        $users[count($users)] = array(
-            'username' => $s_username,
-            'password' => $s_password,
-            'id' => "userID#0".(count($users) + 1),
-            'status' => "active",
-            'name' => $s_fullName,
-            'created_at' => date("Y-m-d H:i:s"),
-            'email' => $s_email,
-            'number' => $s_number ?? ""
-        );
-        file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
+        
         return array(
             "status" => "success",
             "message" => "User created successfully",
