@@ -4,6 +4,7 @@
  * API root: /mock_api/api/
  * 
  */
+include "MockDataStorage.php";
 header("Content-type: application/json");
 $api_root = "/mock_api/api/";
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -24,7 +25,6 @@ if(isset($method) && isset($uri)){
                 if(isset($body) && !empty($body)){
                     $data = json_decode($body, true);
                     if(isset($data["username"]) && isset($data["password"]) && isset($data["name"]) && isset($data["email"])){
-                        include "MockDataStorage.php";
                         $result = MockDataStorage::newUser($data["username"], $data["password"], $data["name"], $data["email"]);
                         if($result["status"] == "success"){
                             http_response_code(201);
@@ -49,7 +49,34 @@ if(isset($method) && isset($uri)){
                 }
                 break;
         }
-        break;
+    break;
+    case "GET":
+        switch ($uri) {
+            case $api_root."username":
+                if(isset($_GET["username"]) && !empty($_GET["username"])){
+                    $result = MockDataStorage::getUsersByUsername($_GET["username"]);
+                    if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => "User found",
+                            "user" => $result
+                        ));
+                    }else{
+                        http_response_code(404);
+                        echo json_encode(array(
+                            'teste' => 'ok'
+                        ));
+                    }
+                    return;
+                }else{
+                    echo json_encode(array(
+                        'error' =>'error'
+                    ));
+                    return;
+                }
+
+        }
+    break;
 }
 }else{
     http_response_code(404);

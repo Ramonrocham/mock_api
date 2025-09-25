@@ -37,6 +37,12 @@ class MockDataStorage{
 
             $conn->close();
 
+            return array(
+            "status" => "success",
+            "message" => "User created successfully",
+            "code" => 201
+        );
+
         }catch(Exception $e){
             return array(
                 "status" => "error",
@@ -52,18 +58,31 @@ class MockDataStorage{
                 "code" => 409
             );
         }
-
-        
-        return array(
-            "status" => "success",
-            "message" => "User created successfully",
-            "code" => 201
-        );
     }
 
     public static function getUsersByUsername($username){
-        $usersJson = file_get_contents("json/user.json");
-        $users = json_decode($usersJson, true);
+        try{
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT username FROM users WHERE username = ?");
+            $SQL->bind_param("s", $username);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $user = $result->fetch_assoc();
+            $SQL->close();
+            return array(
+                "status" => "success",
+                "message" => "User found",
+                "code" => 200,
+                "data" => $user['username']
+            );
+
+        }catch(Exception $e){
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
         if (!$users) {
             return array(
                 "status" => "error",
