@@ -59,22 +59,24 @@ if(isset($method) && isset($uri)){
                         http_response_code(200);
                         echo json_encode(array(
                             "mensagem" => "User found",
-                            "user" => $result
+                            "user" => $result['data']
                         ));
                     }else{
                         http_response_code(404);
                         echo json_encode(array(
-                            'teste' => 'ok'
+                            "mensagem" => "User not found",
+                            "user" => null
                         ));
                     }
                     return;
                 }else{
+                    http_response_code(400);
                     echo json_encode(array(
-                        'error' =>'error'
+                        'error' =>'Username parameter is required'
                     ));
                     return;
                 }
-
+                break;
         }
     break;
 }

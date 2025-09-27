@@ -24,6 +24,14 @@ class MockDataStorage{
                 "code" => 400
             );
         }
+        $isUser = self::getUsersByUsername($s_username);
+        if($isUser["status"] == "success"){
+            return array(
+                "status" => "error",
+                "message" => "Username already exists",
+                "code" => 409
+            );
+        }
         try{
             $conn = getDbConnection();
             $numUser = $conn->query("SELECT COUNT(*) as count FROM users");
@@ -51,13 +59,6 @@ class MockDataStorage{
             );
 
         }
-        if (self::isUsername($s_username)) {
-            return array(
-                "status" => "error",
-                "message" => "Username already exists",
-                "code" => 409
-            );
-        }
     }
 
     public static function getUsersByUsername($username){
@@ -67,13 +68,21 @@ class MockDataStorage{
             $SQL->bind_param("s", $username);
             $SQL->execute();
             $result = $SQL->get_result();
-            $user = $result->fetch_assoc();
+            $userDB = $result->fetch_assoc();
             $SQL->close();
+            $user = $userDB ? $userDB['username'] : null;
+            if($user === null){
+                return array(
+                    "status" => "error",
+                    "message" => "User not found",
+                    "code" => 404
+                );
+            }
             return array(
                 "status" => "success",
                 "message" => "User found",
                 "code" => 200,
-                "data" => $user['username']
+                "data" => $user
             );
 
         }catch(Exception $e){
@@ -83,29 +92,6 @@ class MockDataStorage{
                 "code" => 500
             );
         }
-        if (!$users) {
-            return array(
-                "status" => "error",
-                "message" => "No user found",
-                "code" => 404
-            );
-        }
-        foreach ($users as $user) {
-            if ($user['username'] === $username) {
-                return array(
-                    "status" => "success",
-                    "message" => "User found",
-                    "code" => 200,
-                    "data" => $user
-                );
-            }
-        }
-
-        return array(
-            "status" => "error",
-            "message" => "User not found",
-            "code" => 404
-        );
     }
 
     public static function userLogin($username, $password){
