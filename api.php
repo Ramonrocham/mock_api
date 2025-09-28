@@ -76,7 +76,15 @@ if(isset($method) && isset($uri)){
                     ));
                     return;
                 }
-                break;
+            break;
+            case $api_root."ping":
+                http_response_code(200);
+                echo json_encode(array(
+                    "mensagem" => 'pong',
+                    "status" => 200
+                ));
+                return;
+            break;
         }
     break;
 }
