@@ -45,9 +45,41 @@ if(isset($method) && isset($uri)){
                         echo json_encode(array(
                             "error" => "Missing required fields"
                         ));
+                        return;
                     }
                 }
             break;
+            case $api_root."login":
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['metodo']) && isset($data['credencial']) && isset($data['password'])){
+                        switch($data['metodo']){
+                            case "username":
+                                $result = MockDataStorage::userLoginWithUsername($data['credencial'], $data['password']);
+                                if($result['status'] == 'success'){
+                                    http_response_code(200);
+                                    echo json_encode(array(
+                                        'message' => 'user login successfully',
+                                        'status' => 200,
+                                        'user' => $result['user']
+                                    ));
+                                }
+                                http_response_code(401);
+                                echo json_encode(array(
+                                        'message' => 'Error credencial',
+                                        'status' => 401,
+                                        'user' => false
+                                    ));
+                                    return;
+                                break;
+                        }
+                        http_response_code(400);
+                        echo json_encode(array(
+                            "error" => "Metodo não aceito"
+                        ));
+                        return;
+                    }
+                }
         }
     break;
     case "GET":

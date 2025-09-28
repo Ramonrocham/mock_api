@@ -97,7 +97,7 @@ class MockDataStorage{
     public static function userLoginWithUsername(String $username,String $password) : array{
         try {
             $conn = getDbConnection();
-            $SQL = $conn->prepare("SELECT username from user where username = ? and password = ?");
+            $SQL = $conn->prepare("SELECT username from users where username = ? and password = ?");
             $SQL->bind_param("ss", $username,$password);
             $SQL->execute();
             $result = $SQL->get_result();
