@@ -24,7 +24,7 @@ class MockDataStorage{
                 "code" => 400
             );
         }
-        $isUser = self::getUsersByUsername($s_username);
+        $isUser = self::getUserByUsername($s_username);
         if($isUser["status"] == "success"){
             return array(
                 "status" => "error",
@@ -61,11 +61,44 @@ class MockDataStorage{
         }
     }
 
-    public static function getUsersByUsername($username){
+    public static function getUserByUsername($username){
         try{
             $conn = getDbConnection();
             $SQL = $conn->prepare("SELECT username FROM users WHERE username = ?");
             $SQL->bind_param("s", $username);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $userDB = $result->fetch_assoc();
+            $SQL->close();
+            $user = $userDB ? $userDB['username'] : null;
+            if($user === null){
+                return array(
+                    "status" => "error",
+                    "message" => "User not found",
+                    "code" => 404
+                );
+            }
+            return array(
+                "status" => "success",
+                "message" => "User found",
+                "code" => 200,
+                "data" => $user
+            );
+
+        }catch(Exception $e){
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
+    }
+
+    public static function getUserByEmail($email){
+        try{
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT username FROM users WHERE email = ?");
+            $SQL->bind_param("s", $email);
             $SQL->execute();
             $result = $SQL->get_result();
             $userDB = $result->fetch_assoc();
@@ -299,7 +332,7 @@ class MockDataStorage{
     }
 
     public static function isUsername($username){
-        $response = self::getUsersByUsername($username);
+        $response = self::getUserByUsername($username);
         return $response['status'] === "success";
     }
 

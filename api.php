@@ -63,6 +63,7 @@ if(isset($method) && isset($uri)){
                                         'status' => 200,
                                         'user' => $result['user']
                                     ));
+                                    return;
                                 }
                                 http_response_code(401);
                                 echo json_encode(array(
@@ -86,7 +87,7 @@ if(isset($method) && isset($uri)){
         switch ($uri) {
             case $api_root."username":
                 if(isset($_GET["username"]) && !empty($_GET["username"])){
-                    $result = MockDataStorage::getUsersByUsername($_GET["username"]);
+                    $result = MockDataStorage::getUserByUsername($_GET["username"]);
                     if($result["status"] == "success"){
                         http_response_code(200);
                         echo json_encode(array(
