@@ -47,7 +47,7 @@ if(isset($method) && isset($uri)){
                         ));
                     }
                 }
-                break;
+            break;
         }
     break;
     case "GET":

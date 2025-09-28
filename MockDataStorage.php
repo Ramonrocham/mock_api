@@ -94,6 +94,37 @@ class MockDataStorage{
         }
     }
 
+    public static function userLoginWithUsername(String $username,String $password) : array{
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT username from user where username = ? and password = ?");
+            $SQL->bind_param("ss", $username,$password);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $userDB = $result->fetch_assoc();
+            $user = $userDB ? $userDB['username'] : null;
+            if($user){
+                return array(
+                    "status" => "success",
+                    "message" => "user login successfully",
+                    "user" => $user
+                );
+            }
+
+        } catch (\Throwable $e) {
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
+        return array(
+            "status" => "error",
+            "message" => "Invalid username or password",
+            "code" => 401
+        );
+    }
+
     public static function userLogin($username, $password){
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true);
