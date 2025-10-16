@@ -236,6 +236,44 @@ class MockDataStorage{
         );
     }
 
+    public static function updateDataUser($column, $data, $username, $password){
+    try {
+        $conn = getDbConnection();
+        $SQL = $conn->prepare("SELECT id from users where username = ? and password = ?");
+        $SQL->bind_param("ss", $username, $password);
+        $SQL->execute();
+        $result = $SQL->get_result();
+        $idDB = $result->fetch_assoc();
+        $idUser = $idDB ? $idDB['id'] : null;
+        if($idUser){
+            $SQL = $conn->prepare("UPDATE users set ".$column." = ? where id = ?");
+            $SQL->bind_param("ss", $data, $idUser);
+            if($SQL->execute()){
+                return array(
+                    "status" => "success",
+                    "message" => "$column change succefully"
+                );
+            }else{
+                return array(
+                    "status" => "error",
+                    "message" => "change error"
+                );
+            }
+        }
+        }catch(\Throwable $e){
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
+        return array(
+            "status" => "error",
+            "message" => "Invalid username or password",
+            "code" => 401
+        );
+    }
+
     public static function setNewpasswordByEmail($username, $email, $newPassword){
         $usersJson = file_get_contents("json/user.json");
         $users = json_decode($usersJson, true);

@@ -86,6 +86,13 @@ if(isset($method) && isset($uri)){
                         return;
                     }
                 }
+            break;
+            default:
+                http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Rota não encontrada",
+                        ));
+            break;
         }
     break;
     case "GET":
@@ -123,6 +130,12 @@ if(isset($method) && isset($uri)){
                 ));
                 return;
             break;
+            default:
+                http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Rota não encontrada",
+                        ));
+            break;
         }
     break;
     case "PATCH":
@@ -151,6 +164,37 @@ if(isset($method) && isset($uri)){
                         ));
                     }
                 }
+            break;
+            case $api_root.'updateDataUser':
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['column']) && isset($data['data']) && isset($data['username']) && isset($data['password'])){
+                        $result = MockDataStorage::updateDataUser($data['column'],$data['data'],$data['username'], $data['password']);
+                        if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => $data['column']." changed"
+                        ));
+                        }else{
+                            http_response_code(404);
+                            echo json_encode(array(
+                                "mensagem" => "failed to change ".$data['column'],
+                            ));
+                        }
+                        return;
+                    }else{
+                        http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Missing parameters",
+                        ));
+                    }
+                }
+            break;
+            default:
+                http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Rota não encontrada",
+                        ));
             break;
         }
     break;
