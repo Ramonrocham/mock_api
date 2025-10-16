@@ -125,6 +125,35 @@ if(isset($method) && isset($uri)){
             break;
         }
     break;
+    case "PATCH":
+        switch ($uri){
+            case $api_root.'newPassword':
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['username']) && isset($data['password']) && isset($data['newPassword'])){
+                        $result = MockDataStorage::setNewPassword($data['username'],$data['password'],$data['newPassword']);
+                        if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => "Password changed"
+                        ));
+                        }else{
+                            http_response_code(404);
+                            echo json_encode(array(
+                                "mensagem" => "failed to change password",
+                            ));
+                        }
+                        return;
+                    }else{
+                        http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Missing parameters",
+                        ));
+                    }
+                }
+            break;
+        }
+    break;
 }
 }else{
     http_response_code(404);

@@ -198,60 +198,37 @@ class MockDataStorage{
     }
 
     public static function setNewPassword($username, $password, $newPassword){
-        $usersJson = file_get_contents("json/user.json");
-        $users = json_decode($usersJson, true);
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT id from users where username = ? and password = ?");
+            $SQL->bind_param("ss", $username, $password);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $idDB = $result->fetch_assoc();
+            $idUser = $idDB ? $idDB['id'] : null;
+            if($idUser){
+                $SQL = $conn->prepare("UPDATE users set password = ? where id = ?");
+                $SQL->bind_param("ss", $newPassword, $idUser);
+                if($SQL->execute()){
+                    return array(
+                        "status" => "success",
+                        "message" => "Password change succefully"
+                    );
+                }else{
+                    return array(
+                        "status" => "error",
+                        "message" => "error"
+                    );
+                }
+            }
 
-                        
-        $changesJson = file_get_contents("json/logChanges.json");
-        $changes = json_decode($changesJson, true) ?? [];
-
-        if (!$users) {
-            $changes[] = array(
-                    'userData' => array(
-                        "userId" => "null",
-                        "username" => $username),
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'action' => "password_change",
-                    'status' => "falied"
-                );
-            file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
-
+        }catch(\Throwable $e){
             return array(
                 "status" => "error",
-                "message" => "No user found",
-                "code" => 404
+                "message" => "Database connection error",
+                "code" => 500
             );
         }
-        foreach ($users as &$user) {
-            if ($user['username'] === $username && $user['password'] === $password) {
-                $user['password'] = $newPassword;
-                file_put_contents("json/user.json", json_encode($users, JSON_PRETTY_PRINT));
-
-                $changes[] = array(
-                    'userData' => $user,
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'action' => "password_change",
-                    'status' => "success"
-                );
-                file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
-                return array(
-                    "status" => "success",
-                    "message" => "Password updated successfully",
-                    "code" => 200
-                );
-            }
-        }
-
-        $changes[] = array(
-                    'userData' => array(
-                        "userId" => "null",
-                        "username" => $username),
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'action' => "password_change",
-                    'status' => "falied"
-                );
-        file_put_contents("json/logChanges.json", json_encode($changes, JSON_PRETTY_PRINT));
-
         return array(
             "status" => "error",
             "message" => "Invalid username or password",
