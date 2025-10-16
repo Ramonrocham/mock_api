@@ -32,6 +32,14 @@ class MockDataStorage{
                 "code" => 409
             );
         }
+        $isUser = self::getUserByEmail($s_email);
+        if($isUser["status"] == "success"){
+            return array(
+                "status" => "error",
+                "message" => "Email already exists",
+                "code" => 409
+            );
+        }
         try{
             $conn = getDbConnection();
             $numUser = $conn->query("SELECT COUNT(*) as count FROM users");
@@ -130,17 +138,17 @@ class MockDataStorage{
     public static function userLoginWithUsername(String $username,String $password) : array{
         try {
             $conn = getDbConnection();
-            $SQL = $conn->prepare("SELECT username from users where username = ? and password = ?");
+            $SQL = $conn->prepare("SELECT name from users where username = ? and password = ?");
             $SQL->bind_param("ss", $username,$password);
             $SQL->execute();
             $result = $SQL->get_result();
             $userDB = $result->fetch_assoc();
-            $user = $userDB ? $userDB['username'] : null;
+            $user = $userDB ? $userDB['name'] : null;
             if($user){
                 return array(
                     "status" => "success",
                     "message" => "user login successfully",
-                    "user" => $user
+                    "name" => $user
                 );
             }
 
@@ -158,52 +166,30 @@ class MockDataStorage{
         );
     }
 
-    public static function userLogin($username, $password){
-        $usersJson = file_get_contents("json/user.json");
-        $users = json_decode($usersJson, true);
-        $logLoginJson = file_get_contents("json/logLogin.json");
-        $logLogin = json_decode($logLoginJson, true) ?? [];
-        if (!$users) {
-            $logLogin[] = array(
-                    'userData' => array(
-                        "userId" => "null",
-                        "username" => $username),
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'status' => "falied"
-                );
-            file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
-            return array(
-                "status" => "error",
-                "message" => "No user found",
-                "code" => 404
-            );
-        }
-        foreach ($users as $user) {
-            if ($user['username'] === $username && $user['password'] === $password) {
-                
-                $logLogin[] = array(
-                    'userData' => array('userId' => $user['id'],
-                        'username' => $username),
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'status' => "success"
-                );
-                file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
+     public static function userLoginWithEmail(String $email,String $password) : array{
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT name from users where email = ? and password = ?");
+            $SQL->bind_param("ss", $email,$password);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $userDB = $result->fetch_assoc();
+            $user = $userDB ? $userDB['name'] : null;
+            if($user){
                 return array(
                     "status" => "success",
-                    "message" => "Login successful",
-                    "code" => 200,
-                    "data" => $user
+                    "message" => "user login successfully",
+                    "name" => $user
                 );
             }
+
+        } catch (\Throwable $e) {
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
         }
-        $logLogin[] = array(
-                    'userData' => array(
-                        "userId" => "null",
-                        "username" => $username),
-                    'timestamp' => date("Y-m-d H:i:s"),
-                    'status' => "falied"
-                );
-        file_put_contents("json/logLogin.json", json_encode($logLogin, JSON_PRETTY_PRINT));
         return array(
             "status" => "error",
             "message" => "Invalid username or password",

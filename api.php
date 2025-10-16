@@ -56,12 +56,16 @@ if(isset($method) && isset($uri)){
                         switch($data['metodo']){
                             case "username":
                                 $result = MockDataStorage::userLoginWithUsername($data['credencial'], $data['password']);
-                                if($result['status'] == 'success'){
+                            case "email":
+                                $result = MockDataStorage::userLoginWithEmail($data['credencial'], $data['password']);
+                                break;
+                        }
+                        if($result['status'] == 'success'){
                                     http_response_code(200);
                                     echo json_encode(array(
                                         'message' => 'user login successfully',
                                         'status' => 200,
-                                        'user' => $result['user']
+                                        'name' => $result['name']
                                     ));
                                     return;
                                 }
@@ -69,14 +73,15 @@ if(isset($method) && isset($uri)){
                                 echo json_encode(array(
                                         'message' => 'Error credencial',
                                         'status' => 401,
-                                        'user' => false
+                                        'name' => false
                                     ));
                                     return;
                                 break;
-                        }
                         http_response_code(400);
                         echo json_encode(array(
-                            "error" => "Metodo não aceito"
+                            "error" => "Metodo não aceito",
+                            'status' => 401,
+                            'name' => false
                         ));
                         return;
                     }
