@@ -58,4 +58,16 @@ class Mailer {
             return false;
         }
     }
+
+    public function getExpirationCode(int $length = 6): string {
+        $characters = '0123456789';
+        $code = '';
+        for ($i = 0; $i < $length; $i++) {
+            $code .= $characters[random_int(0, strlen($characters) - 1)];
+            if($i == $length/2 -1){
+                $code .=' ';
+            }
+        }
+        return $code;
+    }
 }

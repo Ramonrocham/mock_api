@@ -1,6 +1,7 @@
 <?php
 
 require_once 'conexao.php';
+include "email.php";
 
 class MockDataStorage{
     public static function newUser($username, $password, $fullName, $email, $number = null){
@@ -277,5 +278,31 @@ class MockDataStorage{
     public static function isUsername($username){
         $response = self::getUserByUsername($username);
         return $response['status'] === "success";
+    }
+
+    public static function recoveryPassword($email){
+        $response = self::getUserByEmail($email);
+        $isUser =  $response['status'] === "success";
+        if($isUser){
+            $mailer = new Mailer();
+            $code = $mailer->getExpirationCode();
+            $dateExpiration = new DateTime();
+            $dateExpiration->modify('+5 minutes');
+
+            $mailer->to($email, 'Recuperação de senha');
+            $mailer->body('<h2>Recuperação de senha</h2><p>Esse é o codigo de recuperação da sua conta</p>
+            <p style="text-aling: center;">'.$code.'</p><p>Codigo expira as '.$dateExpiration->format("Y/m/d H:m:s") .'</p>',  'Olá, este é um teste.');
+            $mailer->send();
+
+
+            return array(
+                "status" => "success",
+                "message" => "recovery email sent",
+                "code" => 200,
+                "recovery_code" => $code,
+                "expires_at" => $dateExpiration->format("Y-m-d H:i:s")
+            );
+            
+        }
     }
 }

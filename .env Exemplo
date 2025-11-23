@@ -1,10 +1,11 @@
-#Coloque suas informações e retire o exemplo do final
+#Coloque suas informações e renomeie tirando o "Exemplo" do final
 
 #banco de dados
 DB_HOST=localhost
 DB_NAME=meu_banco_mock
 DB_USER=root
 DB_PASSWORD=senha_local_dev
+DB_PORT=3307
 
 # Credenciais do Email (SMTP de Teste)
 # Host e Portas padrão do Gmail

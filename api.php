@@ -87,6 +87,31 @@ if(isset($method) && isset($uri)){
                     }
                 }
             break;
+            case $api_root.'recoveryPassword':
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['email'])){
+                        $result = MockDataStorage::recoveryPassword($data['email']);
+                        if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => "Recovery email sent"
+                        ));
+                        }else{
+                            http_response_code(404);
+                            echo json_encode(array(
+                                "mensagem" => "failed to send recovery email",
+                            ));
+                        }
+                        return;
+                    }else{
+                        http_response_code(400);
+                        echo json_encode(array(
+                            "mensagem" => "Missing parameters",
+                        ));
+                    }
+                }
+            break;    
             default:
                 http_response_code(404);
                         echo json_encode(array(
