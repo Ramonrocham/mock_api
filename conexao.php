@@ -1,18 +1,24 @@
 <?php
+require __DIR__ . '/vendor/autoload.php';
 /**
  * Conexão com o banco de dados
+ * Configure seu banco de dados no ".env Exemplo" e renomeie para ".env"
  * 
  */
+
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 function getDbConnection(): mysqli {
 
     // --- Configurações do Banco de Dados ---
     // Ajuste conforme necessário para seu ambiente.
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $port = 3307;
-    $dbname = "mock_api_db";
+    $servername = $_ENV['DB_HOST'];
+    $username =  $_ENV['DB_USER'];
+    $password =  $_ENV['DB_PASSWORD'];
+    $port =  $_ENV['DB_PORT'];
+    $dbname =  $_ENV['DB_NAME'];
 
     try {
         $temp_conn = new mysqli($servername, $username, $password, '', $port);

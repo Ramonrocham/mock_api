@@ -138,7 +138,7 @@ if(isset($method) && isset($uri)){
             break;
         }
     break;
-    case "PATCH":
+    case "PUT":
         switch ($uri){
             case $api_root.'newPassword':
                 if(isset($body) && !empty($body)){

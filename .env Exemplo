@@ -1,0 +1,19 @@
+#Coloque suas informações e retire o exemplo do final
+
+#banco de dados
+DB_HOST=localhost
+DB_NAME=meu_banco_mock
+DB_USER=root
+DB_PASSWORD=senha_local_dev
+
+# Credenciais do Email (SMTP de Teste)
+# Host e Portas padrão do Gmail
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587 
+
+# SE ESTIVER USANDO A PORTA 465, MUDE PARA SMTP_PORT=465 E USE:
+# SMTP_SECURE=ssl
+SMTP_USERNAME=seu.email.real@gmail.com
+SMTP_PASSWORD=sua_senha_de_app_16_digitos_aqui
+MAIL_FROM_NAME="API de Login Mock"
+SMTP_FROM_EMAIL=seu.email.real@gmail.com
