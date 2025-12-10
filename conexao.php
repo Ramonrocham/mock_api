@@ -70,7 +70,7 @@ function initializeDatabase(mysqli $conn) {
     CREATE TABLE IF NOT EXISTS `log_changes` (
       `log_id` int(11) NOT NULL AUTO_INCREMENT,
       `user_id` varchar(255) DEFAULT NULL,
-      `user_data` json NOT NULL,
+      `user_data` varchar(255) NOT NULL,
       `timestamp` datetime NOT NULL,
       `action` varchar(50) NOT NULL,
       `status` varchar(20) NOT NULL,

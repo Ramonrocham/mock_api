@@ -46,6 +46,13 @@ class MockDataStorage{
             $numUser = $conn->query("SELECT COUNT(*) as count FROM users");
             $row = $numUser->fetch_assoc();
             $count = $row['count'];
+            $id = "changeId#$count";
+
+
+            $conn = getDbConnection();
+            $numUser = $conn->query("SELECT COUNT(*) as count FROM users");
+            $row = $numUser->fetch_assoc();
+            $count = $row['count'];
             $id = "userID#$count";
             $stmt = $conn->prepare("INSERT INTO users (id, username, password, name, email, number, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'active', NOW())");
             $stmt->bind_param("ssssss", $id, $s_username, $s_password, $s_fullName, $s_email, $s_number);
@@ -291,9 +298,10 @@ class MockDataStorage{
 
             $mailer->to($email, 'Recuperação de senha');
             $mailer->body('<h2>Recuperação de senha</h2><p>Esse é o codigo de recuperação da sua conta</p>
-            <p style="text-aling: center;">'.$code.'</p><p>Codigo expira as '.$dateExpiration->format("Y/m/d H:m:s") .'</p>',  'Olá, este é um teste.');
+            <p style="text-aling: center;">'.$code.'</p><p>Codigo expira as '.$dateExpiration->format("Y/m/d H:m:s") .'</p>',  'Api login.');
             $mailer->send();
 
+            self::saveOnDbRecoveryCode($email, $code);
 
             return array(
                 "status" => "success",
@@ -304,5 +312,42 @@ class MockDataStorage{
             );
             
         }
+    }
+    public static function saveOnDbRecoveryCode($email, $code){
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT id FROM users WHERE email = ?");
+            $SQL->bind_param("s", $email);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $userDB = $result->fetch_assoc();
+            $SQL->close();
+            $id = $userDB ? $userDB['id'] : null;
+            
+            if($id === null){
+                return array(
+                    "status" => "error",
+                    "message" => "User not found",
+                    "code" => 404
+                );
+            }
+
+            $stmt = $conn->prepare("INSERT INTO log_changes (user_id, user_data, timestamp, action, status) VALUES (?, ?, NOW(), 'recovery_code', 'active')");
+            $stmt->bind_param("ss", $id, $code);
+            $stmt->execute();
+            $stmt->close();
+            return array(
+                "status" => "success",
+                "message" => "recovery code saved",
+                "code" => 201
+            );
+        } catch (Exception $e) {
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
+
     }
 }
