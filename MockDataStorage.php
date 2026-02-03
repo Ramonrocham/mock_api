@@ -293,7 +293,8 @@ class MockDataStorage{
         if($isUser){
             $mailer = new Mailer();
             $code = $mailer->getExpirationCode();
-            $dateExpiration = new DateTime();
+            $tz = new dateTimeZone('America/Sao_Paulo');
+            $dateExpiration = new DateTime('now', $tz);
             $dateExpiration->modify('+5 minutes');
 
             $mailer->to($email, 'Recuperação de senha');
@@ -310,9 +311,66 @@ class MockDataStorage{
                 "recovery_code" => $code,
                 "expires_at" => $dateExpiration->format("Y-m-d H:i:s")
             );
+        }
+
+        return array(
+                "status" => "error",
+                "message" => "recovery email not sent",
+                "code" => 500
+        );
+    }
+
+    public static function validateRecoveryCode($newPassword, $recoveryCode){
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT user_id, timestamp FROM log_changes WHERE user_data = ? AND action = 'recovery_code' AND status = 'active' ORDER BY timestamp DESC LIMIT 1");
+            $SQL->bind_param("s", $recoveryCode);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $logDB = $result->fetch_assoc();
+            $SQL->close();
+            if(!$logDB){
+                return array(
+                    "status" => "error",
+                    "message" => "Invalid recovery code",
+                    "code" => 400
+                );
+            }
             
+            $tz = new dateTimeZone('America/Sao_Paulo');
+            $timestamp = new DateTime($logDB['timestamp'], $tz);
+            $now = new DateTime('now', $tz);
+            $interval = $now->getTimestamp() - $timestamp->getTimestamp();
+
+            if($interval > 300){
+                return array(
+                    "status" => "error",
+                    "message" => "Recovery code expired",
+                    "code" => 400
+                );
+            }
+
+            $userId = $logDB['user_id'];
+            $SQL = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $SQL->bind_param("ss", $newPassword, $userId);
+            $SQL->execute();
+            $SQL->close();
+
+            return array(
+                "status" => "success",
+                "message" => "Password updated successfully",
+                "code" => 200
+            );
+
+        } catch (Exception $e) {
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
         }
     }
+
     public static function saveOnDbRecoveryCode($email, $code){
         try {
             $conn = getDbConnection();

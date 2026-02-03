@@ -111,7 +111,31 @@ if(isset($method) && isset($uri)){
                         ));
                     }
                 }
-            break;    
+            break;
+            case $api_root.'validateRecoveryCode':
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['newPassword']) && isset($data['recoveryCode'])){
+                        $result = MockDataStorage::validateRecoveryCode($data['newPassword'],$data['recoveryCode']);
+                        if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => "Recovery code valid"
+                        ));
+                        }else{
+                            http_response_code(404);
+                            echo json_encode(array(
+                                "mensagem" => "Invalid recovery code",
+                            ));
+                        }
+                        return;
+                    }else{
+                        http_response_code(400);
+                        echo json_encode(array(
+                            "mensagem" => "Missing parameters",
+                        ));
+                    }
+                }    
             default:
                 http_response_code(404);
                         echo json_encode(array(
