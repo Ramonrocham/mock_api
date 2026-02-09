@@ -33,7 +33,6 @@ function getDbConnection(): mysqli {
         return $conn;
 
     } catch (mysqli_sql_exception $e) {
-        error_log("Falha na inicialização do DB: " . $e->getMessage());
         throw new mysqli_sql_exception("Falha ao inicializar o serviço de banco de dados.", $e->getCode(), $e);
     }
 }
