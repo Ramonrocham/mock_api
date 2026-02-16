@@ -53,30 +53,30 @@ if(isset($method) && isset($uri)){
                 if(isset($body) && !empty($body)){
                     $data = json_decode($body, true);
                     if(isset($data['metodo']) && isset($data['credencial']) && isset($data['password'])){
-                        switch($data['metodo']){
-                            case "username":
-                                $result = MockDataStorage::userLoginWithUsername($data['credencial'], $data['password']);
-                            case "email":
-                                $result = MockDataStorage::userLoginWithEmail($data['credencial'], $data['password']);
-                                break;
+                        if($data['metodo'] && $data['metodo'] == "username"){
+                            error_log("Login attempt with username: " . $data['credencial']);
+                            $result = MockDataStorage::userLoginWithUsername($data['credencial'], $data['password']);
+                            error_log("Login result: " . json_encode($result, JSON_PRETTY_PRINT));
                         }
-                        if($result['status'] == 'success'){
-                                    http_response_code(200);
-                                    echo json_encode(array(
-                                        'message' => 'user login successfully',
-                                        'status' => 200,
-                                        'name' => $result['name']
-                                    ));
-                                    return;
-                                }
-                                http_response_code(401);
-                                echo json_encode(array(
-                                        'message' => 'Error credencial',
-                                        'status' => 401,
-                                        'name' => false
-                                    ));
-                                    return;
-                                break;
+                        if($data['metodo'] && $data['metodo'] == "email"){
+                            $result = MockDataStorage::userLoginWithEmail($data['credencial'], $data['password']);
+                        }
+                        if(isset($result['status']) && $result['status'] == 'success'){
+                            http_response_code(200);
+                            echo json_encode(array(
+                                'message' => 'user login successfully',
+                                'status' => 200,
+                                'name' => $result['name']
+                            ));
+                            return;
+                            }
+                        http_response_code(401);
+                        echo json_encode(array(
+                                'message' => 'Error credencial',
+                                'status' => 401,
+                                'name' => false
+                            ));
+                            return;
                         http_response_code(400);
                         echo json_encode(array(
                             "error" => "Metodo não aceito",
@@ -247,6 +247,42 @@ if(isset($method) && isset($uri)){
             break;
         }
     break;
+    case "DELETE":
+        switch ($uri){
+            case $api_root.'deleteUser':
+                if(isset($body) && !empty($body)){
+                    $data = json_decode($body, true);
+                    if(isset($data['username']) && isset($data['password'])){
+                        $result = MockDataStorage::deleteUser($data['username'], $data['password']);
+                        if($result["status"] == "success"){
+                        http_response_code(200);
+                        echo json_encode(array(
+                            "mensagem" => "User deleted"
+                        ));
+                        }else{
+                            http_response_code(404);
+                            echo json_encode(array(
+                                "mensagem" => "failed to delete user",
+                            ));
+                        }
+                        return;
+                    }else{
+                        http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Missing parameters",
+                        ));
+                    }
+                }
+            break;
+            default:
+                http_response_code(404);
+                        echo json_encode(array(
+                            "mensagem" => "Rota não encontrada",
+                        ));
+            break;
+        }
+    break;
+
 }
 }else{
     http_response_code(404);

@@ -152,6 +152,8 @@ class MockDataStorage{
             $result = $SQL->get_result();
             $userDB = $result->fetch_assoc();
             $user = $userDB ? $userDB['name'] : null;
+
+            
             if($user){
                 return array(
                     "status" => "success",
@@ -407,5 +409,44 @@ class MockDataStorage{
             );
         }
 
+    }
+
+    public static function deleteUser($username, $password){
+        try {
+            $conn = getDbConnection();
+            $SQL = $conn->prepare("SELECT id from users where username = ? and password = ?");
+            $SQL->bind_param("ss", $username, $password);
+            $SQL->execute();
+            $result = $SQL->get_result();
+            $idDB = $result->fetch_assoc();
+            $idUser = $idDB ? $idDB['id'] : null;
+            if($idUser){
+                $SQL = $conn->prepare("DELETE from users where id = ?");
+                $SQL->bind_param("s", $idUser);
+                if($SQL->execute()){
+                    return array(
+                        "status" => "success",
+                        "message" => "User deleted succefully"
+                    );
+                }else{
+                    return array(
+                        "status" => "error",
+                        "message" => "error"
+                    );
+                }
+            }
+
+        }catch(\Throwable $e){
+            return array(
+                "status" => "error",
+                "message" => "Database connection error",
+                "code" => 500
+            );
+        }
+        return array(
+            "status" => "error",
+            "message" => "Invalid username or password",
+            "code" => 401
+        );
     }
 }
